@@ -1575,18 +1575,33 @@ async function generatePDFBlob() {
   let y = 14;
 
   // ── Logo + Header ──────────────────────────────────
-  const logoImg = new Image();
-  logoImg.src = document.querySelector('.logo-img').src;
-  await new Promise(r => { logoImg.onload = r; logoImg.onerror = r; });
+  // Ambil logo langsung dari src img (sudah base64, tidak perlu load ulang)
+  const logoEl = document.querySelector('.logo-img');
+  const logoSrc = logoEl ? logoEl.src : null;
+  let logoLoaded = false;
+  if (logoSrc && logoSrc.startsWith('data:')) {
+    logoLoaded = true; // base64 langsung pakai, tidak perlu load
+  } else if (logoSrc) {
+    // URL eksternal — coba load dulu
+    await new Promise(r => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = r; img.onerror = r;
+      img.src = logoSrc;
+    });
+    logoLoaded = true;
+  }
 
   // Header background
   doc.setFillColor(27,94,32);
   doc.rect(0, 0, W, 30, 'F');
 
-  // Logo (putih, landscape)
-  try {
-    doc.addImage(logoImg, 'PNG', margin, 5, 70, 20);
-  } catch(e) {}
+  // Logo (pakai base64 langsung dari src)
+  if (logoSrc) {
+    try {
+      doc.addImage(logoSrc, 'PNG', margin, 5, 20, 20);
+    } catch(e) {}
+  }
 
   // Title text
   doc.setTextColor(255,255,255);
@@ -2056,10 +2071,13 @@ function clearTTD(who) {
 function getTTDDataURL(who) {
   const canvas = document.getElementById('ttdCanvas'+who);
   if (!canvas) return null;
-  // cek apakah ada gambar
   const ctx = canvas.getContext('2d');
-  const data = ctx.getImageData(0,0,canvas.width,canvas.height).data;
-  const hasContent = data.some((v,i) => i%4===3 && v>10);
+  const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+  // Cek apakah ada pixel yang tidak transparan (alpha > 10)
+  let hasContent = false;
+  for (let i = 3; i < data.length; i += 4) {
+    if (data[i] > 10) { hasContent = true; break; }
+  }
   return hasContent ? canvas.toDataURL('image/png') : null;
 }
 
