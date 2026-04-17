@@ -1352,7 +1352,10 @@ async function kirimLaporan() {
     if (nama) karyawanRows.push(`${nama} | Datang: ${jam || '--:--'} | Pulang: ${jamPulang || '--:--'} | ${ket || '-'}`);
   });
 
+  const ttdP = typeof getTTDDataURL === 'function' ? getTTDDataURL('Penyerah') : null;
+  const ttdN = typeof getTTDDataURL === 'function' ? getTTDDataURL('Penerima') : null;
   const payload = {
+    action: 'simpanLaporan',
     namaPetugas: document.getElementById('namaPetugas').value,
     shift: document.getElementById('shift').value,
     tanggal: document.getElementById('tanggal').value,
@@ -1361,23 +1364,29 @@ async function kirimLaporan() {
     inventarisAda: invAda.join(', ') || '-',
     inventarisTidak: invTidak.join(', ') || '-',
     karyawanLuarJam: karyawanRows.join('\n') || 'Tidak ada',
-    serahTerimaPenyerah: document.getElementById('stNamaPenyerah').value,
-    serahTerimaShiftPenyerah: document.getElementById('stShiftPenyerah').value,
-    serahTerimaPenerima: document.getElementById('stNamaPenerima').value,
-    serahTerimaShiftPenerima: document.getElementById('stShiftPenerima').value,
+    stNamaPenyerah: document.getElementById('stNamaPenyerah').value,
+    stShiftPenyerah: document.getElementById('stShiftPenyerah').value,
+    stNamaPenerima: document.getElementById('stNamaPenerima').value,
+    stShiftPenerima: document.getElementById('stShiftPenerima').value,
+    fotoSerahTerima: window.stFotoData || null,
+    fotoKejadian: [],
+    ttdPenyerah: ttdP,
+    ttdPenerima: ttdN,
     timestamp: new Date().toLocaleString('id-ID', { timeZone:'Asia/Makassar' })
   };
 
   setStatus('sending', '⏳ Mengirim laporan...');
-  document.getElementById('btnSubmit').disabled = true;
+  document.getElementById('btnUpload').disabled = true;
 
   try {
-    await fetch(SCRIPT_URL, {
+    const resp = await fetch(SCRIPT_URL, {
       method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify(payload)
     });
+    let result = {};
+    try { result = await resp.json(); } catch(e) {}
+    if (result.success === false) throw new Error(result.message || 'GAS error');
     setStatus('success', '✓ Laporan berhasil dikirim ke admin');
     showToast('✓ Laporan terkirim!');
     setTimeout(() => {
@@ -1386,7 +1395,7 @@ async function kirimLaporan() {
   } catch (err) {
     setStatus('error', '✗ Gagal mengirim — periksa koneksi internet');
     showToast('✗ Gagal kirim: ' + err.message, true);
-    document.getElementById('btnSubmit').disabled = false;
+    document.getElementById('btnUpload').disabled = false;
   }
 }
 
@@ -2419,8 +2428,11 @@ async function kirimLangsung() {
   setBtnLoading(true);
   setStatus('sending','⏳ Mengirim...');
   try {
-    await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+    const resp = await fetch(SCRIPT_URL, { method:'POST',
+      headers:{'Content-Type':'text/plain'}, body:JSON.stringify(payload) });
+    let result = {};
+    try { result = await resp.json(); } catch(e) {}
+    if (result.success === false) throw new Error(result.message || 'GAS error');
     setStatus('success','✓ Data berhasil dikirim!');
     showToast('✓ Data masuk ke Spreadsheets!');
     setTimeout(()=>{ if(confirm('Data terkirim! Reset form?')) resetForm(); }, 800);
