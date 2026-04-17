@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaporPak - Pilih Akses</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+        }
+        h1 { color: #333; }
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+        .card {
+            padding: 20px 40px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: 0.3s;
+        }
+        .card:hover { background: #0056b3; transform: translateY(-5px); }
+        .admin { background: #28a745; }
+        .admin:hover { background: #218838; }
+    </style>
+</head>
+<body>
+
+    <h1>Selamat Datang di LaporPak</h1>
+    <p>Pilih menu akses di bawah ini:</p>
+
+    <div class="container">
+        <a href="./petugas/" class="card">Aplikasi Petugas</a>
+        <a href="./admin/" class="card">Halaman Admin</a>
+    </div>
+
+</body>
+</html>
