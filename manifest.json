@@ -1,10 +1,10 @@
 {
-  "id": "/",
+  "id": "/LaporPak/",
   "name": "LaporPak – Sistem Pelaporan",
   "short_name": "LaporPak",
   "description": "Aplikasi pelaporan masyarakat yang mudah dan cepat",
-  "start_url": "/index.html",
-  "scope": "/",
+  "start_url": "/LaporPak/index.html",
+  "scope": "/LaporPak/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0a0f2e",
@@ -57,14 +57,14 @@
       "name": "Buat Laporan",
       "short_name": "Lapor",
       "description": "Buat laporan baru langsung",
-      "url": "/index.html?action=report",
+      "url": "/LaporPak/index.html?action=report",
       "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96", "type": "image/png" }]
     },
     {
       "name": "Cek Status",
       "short_name": "Status",
       "description": "Pantau status laporan",
-      "url": "/index.html?action=status",
+      "url": "/LaporPak/index.html?action=status",
       "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96", "type": "image/png" }]
     }
   ],
