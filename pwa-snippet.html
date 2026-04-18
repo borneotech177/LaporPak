@@ -1,0 +1,134 @@
+<!--
+=================================================================
+  LAPORPAK PWA – Tambahkan kode ini ke dalam <head> index.html
+=================================================================
+-->
+
+<!-- ── PWA Meta Tags ── -->
+<meta name="application-name" content="LaporPak">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LaporPak">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#e01f1f">
+<meta name="msapplication-TileColor" content="#0a0f2e">
+<meta name="msapplication-TileImage" content="icons/icon-144.png">
+
+<!-- ── Manifest ── -->
+<link rel="manifest" href="manifest.json">
+
+<!-- ── Apple Touch Icons ── -->
+<link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png">
+<link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
+
+<!-- ── Favicon ── -->
+<link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-96.png">
+
+<!--
+=================================================================
+  Tambahkan script ini sebelum </body> di index.html
+=================================================================
+-->
+<script>
+// ── Register Service Worker ──
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+      console.log('[LaporPak] SW registered:', reg.scope);
+
+      // Cek update SW setiap 60 detik
+      setInterval(() => reg.update(), 60_000);
+
+      // Notifikasi jika ada versi baru
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            showUpdateBanner();
+          }
+        });
+      });
+    } catch (err) {
+      console.error('[LaporPak] SW registration failed:', err);
+    }
+  });
+}
+
+// ── Banner update versi baru ──
+function showUpdateBanner() {
+  const banner = document.createElement('div');
+  banner.innerHTML = `
+    <div style="position:fixed;bottom:80px;left:16px;right:16px;z-index:9999;
+      background:#111840;border:1.5px solid rgba(224,31,31,0.5);border-radius:14px;
+      padding:14px 16px;display:flex;align-items:center;justify-content:space-between;
+      box-shadow:0 8px 24px rgba(0,0,0,0.5);font-family:'Nunito',sans-serif;">
+      <span style="font-size:13px;color:#f4f6ff;font-weight:700;">🔄 Versi baru tersedia!</span>
+      <button onclick="window.location.reload()" style="background:#e01f1f;color:white;border:none;
+        border-radius:8px;padding:7px 14px;font-weight:800;font-size:12px;cursor:pointer;">
+        Update
+      </button>
+    </div>`;
+  document.body.appendChild(banner);
+}
+
+// ── A2HS (Add to Home Screen) prompt ──
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  showInstallPrompt();
+});
+
+function showInstallPrompt() {
+  // Jangan tampilkan jika sudah pernah ditolak
+  if (localStorage.getItem('laporpak-a2hs-dismissed')) return;
+
+  const prompt = document.createElement('div');
+  prompt.id = 'a2hs-prompt';
+  prompt.innerHTML = `
+    <div style="position:fixed;bottom:80px;left:16px;right:16px;z-index:9999;
+      background:#111840;border:1.5px solid rgba(255,255,255,0.12);border-radius:16px;
+      padding:16px;box-shadow:0 8px 32px rgba(0,0,0,0.6);font-family:'Nunito',sans-serif;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+        <img src="icons/icon-72.png" width="48" height="48" style="border-radius:12px;"
+             onerror="this.style.display='none'"/>
+        <div>
+          <div style="font-size:15px;font-weight:800;color:#f4f6ff;">Install LaporPak</div>
+          <div style="font-size:12px;color:#c0c8d8;">Akses cepat dari layar utama</div>
+        </div>
+        <button onclick="dismissA2HS()" style="margin-left:auto;background:none;border:none;
+          color:#c0c8d8;font-size:20px;cursor:pointer;line-height:1;">×</button>
+      </div>
+      <button onclick="installApp()" style="width:100%;background:linear-gradient(135deg,#e01f1f,#b91010);
+        color:white;border:none;border-radius:10px;padding:12px;font-weight:800;font-size:14px;
+        cursor:pointer;font-family:'Nunito',sans-serif;">
+        📲 Tambah ke Layar Utama
+      </button>
+    </div>`;
+  document.body.appendChild(prompt);
+}
+
+async function installApp() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  console.log('[LaporPak] A2HS outcome:', outcome);
+  deferredPrompt = null;
+  document.getElementById('a2hs-prompt')?.remove();
+}
+
+function dismissA2HS() {
+  localStorage.setItem('laporpak-a2hs-dismissed', '1');
+  document.getElementById('a2hs-prompt')?.remove();
+}
+
+// ── Handle shortcuts dari manifest ──
+window.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const action = params.get('action');
+  if (action === 'report') showScreen('report');
+  else if (action === 'status') showScreen('status');
+});
+</script>
