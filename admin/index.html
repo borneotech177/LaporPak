@@ -882,19 +882,28 @@ function fmtTanggal(tglStr) {
   if (isNaN(d)) return tglStr;
   return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 }
-// Parse waktu kejadian dari Google Sheets — bisa ISO datetime epoch Excel atau HH:MM
+// Parse waktu kejadian dari Google Sheets
+// Google Sheets getValues() otomatis konversi waktu ke Date object
+// Saat JSON.stringify → ISO UTC string, misal "1899-12-30T04:42:00.000Z"
+// Waktu WIB 11:42 → disimpan Sheets → dikirim sbg UTC 04:42 → +7 = 11:42 ✓
 function parseWaktuKejadian(raw) {
   if (!raw) return '—';
-  if (raw.includes('T') || raw.includes('Z')) {
+  // ISO string dari Sheets Date object — selalu UTC, konversi +7 WIB
+  if (typeof raw === 'string' && (raw.includes('T') || raw.includes('Z'))) {
     const d = new Date(raw);
     if (!isNaN(d)) {
-      const h = String(d.getUTCHours()).padStart(2,'0');
-      const m = String(d.getUTCMinutes()).padStart(2,'0');
-      return h + ':' + m;
+      const totalMin = d.getUTCHours() * 60 + d.getUTCMinutes() + 7 * 60;
+      const h = Math.floor(totalMin / 60) % 24;
+      const m = totalMin % 60;
+      return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
     }
   }
-  const m = raw.match(/^(\d{1,2}:\d{2})/);
-  if (m) return m[1];
+  // Format "D/M/YYYY HH:MM" — ambil jam:menit setelah spasi terakhir
+  const mDate = raw.match(/\d{1,2}\/\d{1,2}\/\d{4}\s+(\d{1,2}:\d{2})/);
+  if (mDate) return mDate[1].padStart(5,'0');
+  // Format murni "HH:MM" atau "HH:MM:SS"
+  const mPure = raw.match(/^(\d{1,2}:\d{2})/);
+  if (mPure) return mPure[1].padStart(5,'0');
   return raw;
 }
 
@@ -965,7 +974,7 @@ function renderKejadian() {
   const tbody=document.getElementById('tblKejadian');
   if(!data.length){ tbody.innerHTML='<tr><td colspan="7"><div class="state-empty"><div class="icon">⚠️</div><div class="msg">Tidak ada kejadian</div></div></td></tr>'; return; }
   tbody.innerHTML=data.map(r=>`<tr>
-    <td class="td-mono">${r.tanggal||'—'}</td>
+    <td class="td-mono">${fmtTanggal(parseTanggalStr(r.tanggal||''))||r.tanggal||'—'}</td>
     <td><strong>${r.petugas||'—'}</strong></td>
     <td>${shiftBadge(r.shift)}</td>
     <td class="td-mono">${r.no||''}</td>
@@ -981,7 +990,7 @@ function renderInventaris() {
   const tbody=document.getElementById('tblInventaris');
   if(!allInventaris.length){ tbody.innerHTML='<tr><td colspan="5"><div class="state-empty"><div class="icon">📦</div><div class="msg">Belum ada data</div></div></td></tr>'; return; }
   tbody.innerHTML=allInventaris.map(r=>`<tr>
-    <td class="td-mono">${r.tanggal||'—'}</td>
+    <td class="td-mono">${fmtTanggal(parseTanggalStr(r.tanggal||''))||r.tanggal||'—'}</td>
     <td><strong>${r.petugas||'—'}</strong></td>
     <td>${shiftBadge(r.shift)}</td>
     <td>${(r.status||'').toLowerCase().includes('tidak')?'<span class="badge badge-warn">✗ Tidak Ada</span>':'<span class="badge badge-ok">✓ Ada</span>'}</td>
@@ -1103,7 +1112,7 @@ function renderPdfList() {
     if(!pdf) return false;
     if(!q) return true;
     return (r.nama_petugas||'').toLowerCase().includes(q)||r.tanggal.includes(q)||(r.shift||'').toLowerCase().includes(q);
-  });
+  }).sort((a,b)=>new Date(b._tgl||b.tanggal||0)-new Date(a._tgl||a.tanggal||0));
   const container=document.getElementById('pdfListContainer');
   document.getElementById('pdfListCount').textContent = data.length+' file PDF';
   if(!data.length){
@@ -1116,7 +1125,7 @@ function renderPdfList() {
       <div class="pdf-ico">📄</div>
       <div class="pdf-info">
         <div class="pdf-name">${r.nama_petugas||'—'}</div>
-        <div class="pdf-meta">${r.tanggal||'—'} · ${shiftBadgeText(r.shift)}</div>
+        <div class="pdf-meta">${fmtTanggal(r._tgl)||r.tanggal||'—'} · ${shiftBadgeText(r.shift)}</div>
       </div>
       <a href="${toDirectUrl(pdf)}" target="_blank" rel="noopener" class="pdf-open btn btn-ghost btn-xs" onclick="event.stopPropagation()" title="Buka di tab baru">↗</a>
     </div>`;
