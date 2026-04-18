@@ -478,7 +478,7 @@ tr:hover td { background: var(--accent-xs); }
           <input type="date" class="filter-input" id="filterTanggalSampai">
           <select class="filter-input" id="filterShift">
             <option value="">Semua Shift</option>
-            <option>Pagi</option><option>Siang</option><option>Malam</option>
+            <option>Pagi</option><option>Non Shift</option><option>Malam</option>
           </select>
           <input type="text" class="filter-input" id="filterPetugas" placeholder="Cari petugas…">
           <button class="btn btn-primary btn-sm" onclick="terapkanFilter()">🔍 Filter</button>
@@ -882,6 +882,21 @@ function fmtTanggal(tglStr) {
   if (isNaN(d)) return tglStr;
   return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 }
+// Parse waktu kejadian dari Google Sheets — bisa ISO datetime epoch Excel atau HH:MM
+function parseWaktuKejadian(raw) {
+  if (!raw) return '—';
+  if (raw.includes('T') || raw.includes('Z')) {
+    const d = new Date(raw);
+    if (!isNaN(d)) {
+      const h = String(d.getUTCHours()).padStart(2,'0');
+      const m = String(d.getUTCMinutes()).padStart(2,'0');
+      return h + ':' + m;
+    }
+  }
+  const m = raw.match(/^(\d{1,2}:\d{2})/);
+  if (m) return m[1];
+  return raw;
+}
 
 // ── PROSES ──────────────────────────────────────────────────
 function prosesData() {
@@ -954,7 +969,7 @@ function renderKejadian() {
     <td><strong>${r.petugas||'—'}</strong></td>
     <td>${shiftBadge(r.shift)}</td>
     <td class="td-mono">${r.no||''}</td>
-    <td class="td-mono">${r.waktu||'—'}</td>
+    <td class="td-mono">${parseWaktuKejadian(r.waktu)}</td>
     <td style="max-width:280px;white-space:pre-wrap;word-break:break-word">${r.uraian_kejadian||'—'}</td>
     <td>${r.foto_bukti_drive_&&r.foto_bukti_drive_!=='Tidak ada'
       ? `<button class="file-btn img" onclick='bukaFileSingle("${r.foto_bukti_drive_.replace(/'/g,"\\'")}","foto")'>📷 Lihat</button>`
@@ -975,8 +990,8 @@ function renderInventaris() {
 }
 
 function renderCharts() {
-  // Shift 7 hari terakhir
-  const shifts={Pagi:0,Siang:0,Malam:0};
+  // Shift 7 hari terakhir (Siang ditampilkan sebagai Non-Shift)
+  const shifts={Pagi:0,'Non-Shift':0,Malam:0};
   const cutoff=new Date(); cutoff.setDate(cutoff.getDate()-7);
   cutoff.setHours(0,0,0,0);
   allRekap.forEach(r=>{
@@ -984,18 +999,18 @@ function renderCharts() {
     if (!tgl) return;
     const d = new Date(tgl + 'T00:00:00');
     if (d >= cutoff) {
-      const s = (r.shift||'').trim();
-      if (s.toLowerCase().includes('pagi'))  shifts['Pagi']++;
-      else if (s.toLowerCase().includes('siang')) shifts['Siang']++;
-      else if (s.toLowerCase().includes('malam')) shifts['Malam']++;
+      const s = (r.shift||'').trim().toLowerCase();
+      if (s.includes('pagi'))  shifts['Pagi']++;
+      else if (s.includes('siang')||s.includes('non shift')||s.includes('nonshift')||s.includes('non-shift')||s.includes('libur')||s.includes('off')) shifts['Non-Shift']++;
+      else if (s.includes('malam')) shifts['Malam']++;
     }
   });
   const maxS=Math.max(...Object.values(shifts),1);
   document.getElementById('chartShift').innerHTML=Object.entries(shifts).map(([k,v])=>`
     <div class="bar-row">
       <div class="bar-key">${k}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${(v/maxS*100).toFixed(0)}%;background:${k==='Pagi'?'#e65100':k==='Siang'?'#1565c0':'#d1121d'}"></div></div>
-      <div class="bar-val" style="color:${k==='Pagi'?'#e65100':k==='Siang'?'#1565c0':'#d1121d'}">${v}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(v/maxS*100).toFixed(0)}%;background:${k==='Pagi'?'#e65100':k==='Non-Shift'?'#6a6a8a':'#d1121d'}"></div></div>
+      <div class="bar-val" style="color:${k==='Pagi'?'#e65100':k==='Non-Shift'?'#6a6a8a':'#d1121d'}">${v}</div>
     </div>`).join('');
   // Petugas
   const petMap={};
@@ -1122,19 +1137,22 @@ function selectPdf(idx, url, nama, tgl) {
 
 // ── HELPERS ──────────────────────────────────────────────────
 function shiftBadgeText(s) {
-  const sl=(s||'').toLowerCase();
+  const sl=(s||'').toLowerCase().replace(/\s+/g,'');
   if(sl.includes('pagi')) return '☀️ Pagi';
-  if(sl.includes('siang')) return '🌤 Siang';
+  if(sl.includes('siang')||sl.includes('nonshift')||sl.includes('non-shift')||sl.includes('libur')||sl.includes('off'))
+    return '🚫 Non-Shift';
   if(sl.includes('malam')) return '🌙 Malam';
   return s||'—';
 }
 
 function shiftBadge(s) {
-  const sl=(s||'').toLowerCase();
+  const sl=(s||'').toLowerCase().replace(/\s+/g,'');
   if(sl.includes('pagi'))  return `<span class="badge badge-pagi">☀️ Pagi</span>`;
-  if(sl.includes('siang')) return `<span class="badge badge-siang">🌤 Siang</span>`;
+  if(sl.includes('siang')||sl.includes('nonshift')||sl.includes('non-shift')||sl.includes('libur')||sl.includes('off'))
+    return `<span class="badge" style="background:#f0f0f5;color:#6a6a8a">🚫 Non-Shift</span>`;
   if(sl.includes('malam')) return `<span class="badge badge-malam">🌙 Malam</span>`;
-  return `<span class="badge">${s||'—'}</span>`;
+  // fallback: tampilkan nilai asli supaya terlihat
+  return `<span class="badge" style="background:#fff3e0;color:#e65100" title="nilai shift: ${s}">${s||'—'}</span>`;
 }
 
 function toEmbedUrl(url) {
@@ -1291,7 +1309,7 @@ function bukaDetail(jsonStr) {
       ${kej.length?`<div class="d-card"><div class="d-card-head">Kejadian (${kej.length})</div><div class="d-card-body" style="padding:0">
         <table style="font-size:12px"><thead><tr><th>No</th><th>Waktu</th><th>Uraian</th><th>Foto</th></tr></thead>
         <tbody>${kej.map(k=>`<tr>
-          <td class="td-mono">${k.no||''}</td><td class="td-mono">${k.waktu||'—'}</td>
+          <td class="td-mono">${k.no||''}</td><td class="td-mono">${parseWaktuKejadian(k.waktu)}</td>
           <td style="max-width:240px">${k.uraian_kejadian||'—'}</td>
           <td>${k.foto_bukti_drive_&&k.foto_bukti_drive_!=='Tidak ada'
             ?`<button class="file-btn img" onclick='bukaFileSingle("${k.foto_bukti_drive_.replace(/'/g,"\\'")}","foto")'>📷</button>`:'—'}</td>
