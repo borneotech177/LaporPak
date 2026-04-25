@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#4f8ef7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Upload Laporan — PA Bengkayang</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --blue:     #4f8ef7;
+  --blue-lt:  #e8f0fe;
+  --blue-dk:  #2563eb;
+  --green:    #22c55e;
+  --green-lt: #dcfce7;
+  --red:      #ef4444;
+  --red-lt:   #fee2e2;
+  --orange:   #f97316;
+  --orange-lt:#fff7ed;
+  --gray-50:  #f8fafc;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-400: #94a3b8;
+  --gray-500: #64748b;
+  --gray-700: #334155;
+  --gray-900: #0f172a;
+  --white:    #ffffff;
+  --font:     'Nunito', sans-serif;
+}
+
+body {
+  background: linear-gradient(160deg, #e8f0fe 0%, #f0fdf4 55%, #fef9ee 100%);
+  min-height: 100vh;
+  font-family: var(--font);
+  color: var(--gray-900);
+}
+
+/* HEADER */
+.header {
+  background: var(--white);
+  box-shadow: 0 2px 16px rgba(79,142,247,0.10);
+  padding: 14px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+}
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-icon {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, #4f8ef7, #2563eb);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 4px 14px rgba(79,142,247,0.3);
+}
+.logo-name { font-size: 15px; font-weight: 800; line-height: 1.2; }
+.logo-sub  { font-size: 11px; color: var(--gray-400); font-weight: 600; }
+.hdr-time  { text-align: right; }
+.hdr-clock { font-size: 18px; font-weight: 900; color: var(--blue-dk); }
+.hdr-date  { font-size: 11px; font-weight: 700; color: var(--gray-400); }
+
+/* MAIN */
+.main { padding: 18px 16px 52px; max-width: 480px; margin: 0 auto; }
+
+/* STATUS BAR */
+.status-bar {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 11px; font-weight: 700; color: var(--gray-400);
+  margin-bottom: 4px;
+}
+.sdot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--green);
+  animation: blink 2s infinite;
+  flex-shrink: 0;
+}
+.sdot.err  { background: var(--red); animation: none; }
+.sdot.warn { background: #fbbf24; animation: none; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* SECTION TITLE */
+.stitle {
+  font-size: 12px; font-weight: 800;
+  color: var(--gray-500);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin: 22px 0 10px;
+}
+
+/* CARD */
+.card {
+  background: var(--white);
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(79,142,247,0.09);
+  padding: 20px;
+  margin-bottom: 14px;
+  animation: up .35s ease both;
+}
+@keyframes up { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:none} }
+
+.card-hd {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 18px;
+}
+.card-hd-icon {
+  width: 40px; height: 40px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.ic-blue   { background: var(--blue-lt); }
+.ic-green  { background: var(--green-lt); }
+.ic-orange { background: var(--orange-lt); }
+.card-hd-ttl { font-size: 15px; font-weight: 800; }
+.card-hd-sub { font-size: 12px; color: var(--gray-400); font-weight: 600; }
+
+/* FIELD */
+.field { margin-bottom: 14px; }
+.field label {
+  display: block; font-size: 11px; font-weight: 800;
+  color: var(--gray-500); letter-spacing: .5px; margin-bottom: 6px;
+}
+.sw { position: relative; }
+.sw::after {
+  content: '▾'; position: absolute; right: 14px; top: 50%;
+  transform: translateY(-50%); color: var(--gray-400);
+  font-size: 13px; pointer-events: none;
+}
+.field select,
+.field input[type="date"] {
+  width: 100%;
+  background: var(--gray-50);
+  border: 2px solid var(--gray-200);
+  border-radius: 12px;
+  color: var(--gray-900);
+  font-family: var(--font);
+  font-size: 15px; font-weight: 700;
+  padding: 12px 14px;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+  -webkit-appearance: none; appearance: none;
+}
+.field select:focus,
+.field input[type="date"]:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px rgba(79,142,247,0.12);
+  background: var(--white);
+}
+
+/* UPLOAD ZONE */
+.uz {
+  border: 2.5px dashed var(--gray-200);
+  border-radius: 14px; padding: 28px 16px;
+  text-align: center; cursor: pointer;
+  transition: all .2s; background: var(--gray-50);
+  position: relative;
+}
+.uz input[type="file"] {
+  position: absolute; inset: 0; opacity: 0;
+  cursor: pointer; width: 100%; height: 100%;
+}
+.uz:hover,.uz.drag { border-color: var(--blue); background: var(--blue-lt); }
+.uz.done { border-color: var(--green); border-style: solid; background: var(--green-lt); }
+.uz-ico { font-size: 32px; margin-bottom: 6px; }
+.uz-lbl { font-size: 14px; font-weight: 800; color: var(--gray-700); }
+.uz-hint{ font-size: 11px; color: var(--gray-400); font-weight: 600; margin-top: 2px; }
+.uz-fn  { font-size: 12px; font-weight: 700; color: var(--green); margin-top: 8px; word-break: break-all; }
+
+/* LOCKED NOTICE */
+.lock-notice {
+  display: none;
+  background: var(--red-lt);
+  border-left: 4px solid var(--red);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px; font-weight: 700;
+  color: var(--red); margin-top: 12px;
+}
+.lock-notice.show { display: block; }
+
+/* BUTTON */
+.btn-sub {
+  width: 100%; margin-top: 8px;
+  background: linear-gradient(135deg, #4f8ef7, #2563eb);
+  color: white; border: none; border-radius: 14px;
+  padding: 15px; font-family: var(--font);
+  font-size: 16px; font-weight: 800; cursor: pointer;
+  box-shadow: 0 6px 20px rgba(79,142,247,0.35);
+  transition: all .2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-sub:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(79,142,247,0.45);
+}
+.btn-sub:active:not(:disabled) { transform: none; }
+.btn-sub:disabled {
+  background: var(--gray-200); color: var(--gray-400);
+  cursor: not-allowed; box-shadow: none;
+}
+.bl { display: flex; align-items: center; gap: 8px; }
+.bld{ display: none; align-items: center; gap: 8px; }
+.btn-sub.ld .bl { display: none; }
+.btn-sub.ld .bld{ display: flex; }
+
+.spin {
+  width: 18px; height: 18px;
+  border: 2.5px solid rgba(255,255,255,0.3);
+  border-top-color: white; border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to{transform:rotate(360deg)} }
+
+/* KALENDER */
+.cal-top {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px;
+}
+.cal-mo { font-size: 17px; font-weight: 900; }
+.cal-badge {
+  background: var(--blue-lt); color: var(--blue-dk);
+  font-size: 12px; font-weight: 800;
+  padding: 4px 12px; border-radius: 20px;
+}
+.btn-rf {
+  background: var(--gray-100); border: none; border-radius: 8px;
+  color: var(--gray-500); font-family: var(--font);
+  font-size: 12px; font-weight: 700; padding: 5px 12px;
+  cursor: pointer; transition: all .2s;
+}
+.btn-rf:hover { background: var(--blue-lt); color: var(--blue); }
+
+.dlbls {
+  display: grid; grid-template-columns: repeat(7,1fr);
+  margin-bottom: 4px;
+}
+.dlbl {
+  text-align: center; font-size: 10px; font-weight: 800;
+  color: var(--gray-400); letter-spacing: .3px; padding-bottom: 4px;
+}
+.cgrid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
+
+.cc {
+  aspect-ratio: 1; border-radius: 10px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  border: 1.5px solid transparent;
+  background: var(--gray-50);
+  transition: all .15s;
+}
+.cc.empty { background: transparent; }
+.cc .cn { font-size: 13px; font-weight: 800; color: var(--gray-700); }
+.cc .ci { font-size: 7px; font-weight: 800; color: transparent; margin-top: 1px; }
+
+.cc.up { background: var(--green-lt); border-color: var(--green); }
+.cc.up .cn { color: var(--green); }
+.cc.up .ci { color: var(--green); }
+.cc.tod { background: var(--blue-lt); border-color: var(--blue); }
+.cc.tod .cn { color: var(--blue-dk); }
+.cc.up.tod { background: linear-gradient(135deg,var(--green-lt),var(--blue-lt)); }
+
+.legend {
+  display: flex; gap: 14px;
+  font-size: 11px; font-weight: 700;
+  color: var(--gray-500); margin-top: 12px; flex-wrap: wrap;
+}
+.lg-i { display: flex; align-items: center; gap: 5px; }
+.lg-d { width: 10px; height: 10px; border-radius: 3px; }
+.lg-d.up  { background: var(--green); }
+.lg-d.tod { background: var(--blue); }
+.lg-d.emp { background: var(--gray-200); }
+
+/* REKAP */
+.rkp-list { display: flex; flex-direction: column; gap: 8px; }
+.rkp-item {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--gray-50); border-radius: 12px;
+  padding: 12px 14px;
+  animation: up .25s ease both;
+}
+.rkp-av {
+  width: 40px; height: 40px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 900;
+  color: white; flex-shrink: 0;
+}
+.avb { background: linear-gradient(135deg,#4f8ef7,#2563eb); }
+.avg { background: linear-gradient(135deg,#22c55e,#16a34a); }
+.avo { background: linear-gradient(135deg,#f97316,#ea580c); }
+.avp { background: linear-gradient(135deg,#a855f7,#7c3aed); }
+
+.rkp-info { flex: 1; min-width: 0; }
+.rkp-nm { font-size: 14px; font-weight: 800; }
+.rkp-tg { font-size: 11px; font-weight: 600; color: var(--gray-400); margin-top: 1px; }
+.rkp-lk {
+  background: var(--blue-lt); color: var(--blue-dk);
+  text-decoration: none; font-size: 11px; font-weight: 800;
+  padding: 5px 10px; border-radius: 8px;
+  white-space: nowrap; transition: all .2s; flex-shrink: 0;
+}
+.rkp-lk:hover { background: var(--blue); color: white; }
+
+.empty-st {
+  text-align: center; padding: 30px 16px;
+  color: var(--gray-400); font-size: 13px; font-weight: 700;
+}
+.empty-st .eg { font-size: 36px; margin-bottom: 8px; }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--gray-900); color: white;
+  border-radius: 14px; padding: 13px 22px;
+  font-size: 13px; font-weight: 700;
+  z-index: 999; max-width: 88vw; text-align: center;
+  transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.success { background: var(--green); }
+.toast.error   { background: var(--red); }
+.toast.warn    { background: var(--orange); }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">
+    <div class="logo-icon">📋</div>
+    <div>
+      <div class="logo-name">Upload Laporan</div>
+      <div class="logo-sub">PA Bengkayang · BORNEO-TECH</div>
+    </div>
+  </div>
+  <div class="hdr-time">
+    <div class="hdr-clock" id="clock">--:--</div>
+    <div class="hdr-date"  id="dateStr">---</div>
+  </div>
+</header>
+
+<div class="main">
+
+  <div class="status-bar">
+    <div class="sdot" id="sdot"></div>
+    <span id="stxt">Menghubungkan...</span>
+  </div>
+
+  <!-- FORM -->
+  <div class="stitle">📤 Kirim Laporan</div>
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-hd-icon ic-blue">👤</div>
+      <div>
+        <div class="card-hd-ttl">Form Upload</div>
+        <div class="card-hd-sub">Isi data & upload file PDF kamu</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>NAMA PETUGAS</label>
+      <div class="sw">
+        <select id="sNama">
+          <option value="">— Pilih nama kamu —</option>
+          <option>GUNTUR</option>
+          <option>SUNARDI</option>
+          <option>NURVIANTI</option>
+          <option>FREDI</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>TANGGAL LAPORAN</label>
+      <input type="date" id="iTgl">
+    </div>
+
+    <div class="field">
+      <label>FILE PDF LAPORAN</label>
+      <div class="uz" id="uz">
+        <input type="file" id="iFile" accept=".pdf,application/pdf">
+        <div class="uz-ico" id="uzIco">📁</div>
+        <div class="uz-lbl" id="uzLbl">Tap untuk pilih file</div>
+        <div class="uz-hint">Format PDF · Maks 10MB</div>
+        <div class="uz-fn" id="uzFn"></div>
+      </div>
+    </div>
+
+    <div class="lock-notice" id="lockNote">🔒 Slot ini sudah terisi</div>
+
+    <button class="btn-sub" id="btnSub" onclick="doUpload()">
+      <span class="bl">📤 Kirim Laporan</span>
+      <span class="bld"><div class="spin"></div> Mengirim...</span>
+    </button>
+  </div>
+
+  <!-- KALENDER -->
+  <div class="stitle">📅 Status Bulan Ini</div>
+  <div class="card">
+    <div class="cal-top">
+      <div class="cal-mo" id="calMo">— —</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="cal-badge"><span id="slotCt">0</span> laporan</div>
+        <button class="btn-rf" onclick="loadSlots()">↻</button>
+      </div>
+    </div>
+    <div class="dlbls">
+      <div class="dlbl">Min</div><div class="dlbl">Sen</div>
+      <div class="dlbl">Sel</div><div class="dlbl">Rab</div>
+      <div class="dlbl">Kam</div><div class="dlbl">Jum</div>
+      <div class="dlbl">Sab</div>
+    </div>
+    <div class="cgrid" id="cgrid"></div>
+    <div class="legend">
+      <div class="lg-i"><div class="lg-d up"></div> Sudah upload</div>
+      <div class="lg-i"><div class="lg-d tod"></div> Hari ini</div>
+      <div class="lg-i"><div class="lg-d emp"></div> Belum ada</div>
+    </div>
+  </div>
+
+  <!-- RIWAYAT -->
+  <div class="stitle">📝 Riwayat Upload</div>
+  <div class="card">
+    <div class="rkp-list" id="rkpList">
+      <div class="empty-st"><div class="eg">📭</div>Belum ada laporan bulan ini</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzi2KDhODuuGkA_qDtOAS6GhZ5yVEjDhe0DwV6G1sNLlls4pvoUKGFn5ytGgscqK2uh/exec";
+const AV = { GUNTUR:'avb', SUNARDI:'avg', NURVIANTI:'avo', FREDI:'avp' };
+
+// ── Clock ──────────────────────────────────────────────────
+function tick() {
+  const n=new Date(), p=x=>String(x).padStart(2,'0');
+  document.getElementById('clock').textContent=`${p(n.getHours())}:${p(n.getMinutes())}`;
+  document.getElementById('dateStr').textContent=
+    n.toLocaleDateString('id-ID',{weekday:'short',day:'2-digit',month:'short'});
+}
+setInterval(tick,1000); tick();
+
+// ── Default tanggal ────────────────────────────────────────
+const todayStr = new Date().toISOString().split('T')[0];
+document.getElementById('iTgl').value = todayStr;
+document.getElementById('iTgl').max   = todayStr;
+document.getElementById('iTgl').addEventListener('change', checkLock);
+
+// ── Toast ──────────────────────────────────────────────────
+let _tt;
+function toast(msg,type=''){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className=`toast ${type} show`;
+  clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('show'),3500);
+}
+
+// ── Status bar ─────────────────────────────────────────────
+function setSt(txt,type='ok'){
+  document.getElementById('stxt').textContent=txt;
+  document.getElementById('sdot').className='sdot'+(type==='err'?' err':type==='warn'?' warn':'');
+}
+
+// ── File input ─────────────────────────────────────────────
+const uz=document.getElementById('uz');
+const fi=document.getElementById('iFile');
+fi.addEventListener('change',function(){
+  const f=this.files[0]; if(!f) return;
+  if(f.size>10*1024*1024){toast('⚠️ File terlalu besar! Maks 10MB','warn');this.value='';return;}
+  document.getElementById('uzIco').textContent='✅';
+  document.getElementById('uzLbl').textContent='File dipilih!';
+  document.getElementById('uzFn').textContent=f.name;
+  uz.classList.add('done');
+});
+uz.addEventListener('dragover',e=>{e.preventDefault();uz.classList.add('drag');});
+uz.addEventListener('dragleave',()=>uz.classList.remove('drag'));
+uz.addEventListener('drop',e=>{
+  e.preventDefault();uz.classList.remove('drag');
+  const f=e.dataTransfer.files[0];
+  if(f&&f.type==='application/pdf'){fi.files=e.dataTransfer.files;fi.dispatchEvent(new Event('change'));}
+  else toast('⚠️ Hanya file PDF','warn');
+});
+
+// ── GAS fetch GET ──────────────────────────────────────────
+async function gasCall(params){
+  const qs = new URLSearchParams(params).toString();
+  const res = await fetch(GAS_URL + '?' + qs);
+  return res.json();
+}
+
+// ── Check lock ─────────────────────────────────────────────
+function checkLock(){
+  const tgl=document.getElementById('iTgl').value;
+  const lk=(window._slots||[]).find(s=>s.tanggal===tgl);
+  const note=document.getElementById('lockNote');
+  const btn=document.getElementById('btnSub');
+  if(lk){
+    note.textContent=`🔒 Tanggal ${ftgl(tgl)} sudah diisi oleh ${lk.nama}`;
+    note.classList.add('show'); btn.disabled=true;
+  } else {
+    note.classList.remove('show'); btn.disabled=false;
+  }
+}
+
+// ── Load slots ─────────────────────────────────────────────
+async function loadSlots(){
+  const now=new Date();
+  const bln=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  setSt('Memuat data...');
+  try {
+    const d=await gasCall({action:'getSlots',bulan:bln});
+    if(d.success){
+      window._slots=d.slots||[];
+      renderCal(now,d.slots);
+      renderRkp(d.slots);
+      document.getElementById('slotCt').textContent=d.slots.length;
+      setSt(`Terhubung · ${d.slots.length} laporan bulan ini`);
+      checkLock();
+    } else {
+      setSt('Gagal memuat: '+(d.message||''),'err');
+    }
+  } catch(e){
+    setSt('Tidak dapat terhubung ke server','err');
+  }
+}
+
+// ── Render kalender ────────────────────────────────────────
+function renderCal(now,slots){
+  const y=now.getFullYear(),m=now.getMonth(),td=now.getDate();
+  document.getElementById('calMo').textContent=
+    now.toLocaleDateString('id-ID',{month:'long',year:'numeric'});
+  const up={};
+  slots.forEach(s=>{up[parseInt(s.tanggal.split('-')[2])]=s.nama;});
+  const dim=new Date(y,m+1,0).getDate();
+  const fd=new Date(y,m,1).getDay();
+  let html='';
+  for(let i=0;i<fd;i++) html+=`<div class="cc empty"></div>`;
+  for(let d=1;d<=dim;d++){
+    const isUp=up[d],isT=(d===td);
+    const cls=['cc',isUp?'up':'',isT?'tod':''].join(' ').trim();
+    html+=`<div class="${cls}" title="${isUp||''}">
+      <div class="cn">${d}</div>
+      <div class="ci">${isUp?isUp.substring(0,3):''}</div>
+    </div>`;
+  }
+  document.getElementById('cgrid').innerHTML=html;
+}
+
+// ── Render riwayat ─────────────────────────────────────────
+function renderRkp(slots){
+  const list=document.getElementById('rkpList');
+  if(!slots||!slots.length){
+    list.innerHTML=`<div class="empty-st"><div class="eg">📭</div>Belum ada laporan bulan ini</div>`;
+    return;
+  }
+  const sorted=[...slots].sort((a,b)=>a.tanggal.localeCompare(b.tanggal));
+  list.innerHTML=sorted.map((s,i)=>{
+    const av=AV[s.nama]||'avb';
+    return `<div class="rkp-item" style="animation-delay:${i*.05}s">
+      <div class="rkp-av ${av}">${s.nama.substring(0,2)}</div>
+      <div class="rkp-info">
+        <div class="rkp-nm">${s.nama}</div>
+        <div class="rkp-tg">📅 ${ftgl(s.tanggal)}</div>
+      </div>
+      ${s.linkDrive?`<a class="rkp-lk" href="${s.linkDrive}" target="_blank">Lihat ↗</a>`:''}
+    </div>`;
+  }).join('');
+}
+
+function ftgl(str){
+  if(!str) return '';
+  const [y,m,d]=str.split('-'); return `${d}/${m}/${y}`;
+}
+
+// ── Upload ─────────────────────────────────────────────────
+async function doUpload(){
+  const nama=document.getElementById('sNama').value;
+  const tgl=document.getElementById('iTgl').value;
+  const file=document.getElementById('iFile').files[0];
+
+  if(!nama){toast('⚠️ Pilih nama dulu ya!','warn');return;}
+  if(!tgl) {toast('⚠️ Pilih tanggal laporan!','warn');return;}
+  if(!file){toast('⚠️ Pilih file PDF dulu!','warn');return;}
+
+  const lk=(window._slots||[]).find(s=>s.tanggal===tgl);
+  if(lk){toast(`🔒 Slot sudah diisi oleh ${lk.nama}`,'error');return;}
+
+  const btn=document.getElementById('btnSub');
+  btn.classList.add('ld'); btn.disabled=true;
+
+  try {
+    const b64=await toB64(file);
+    const data=await gasCall({
+      action:'uploadLaporan',
+      nama, tanggal:tgl,
+      fileName:file.name,
+      fileBase64:b64,
+      mimeType:file.type||'application/pdf'
+    });
+
+    if(data.success){
+      toast('✅ Laporan berhasil dikirim!','success');
+      document.getElementById('sNama').value='';
+      document.getElementById('iTgl').value=todayStr;
+      document.getElementById('iFile').value='';
+      document.getElementById('uzIco').textContent='📁';
+      document.getElementById('uzLbl').textContent='Tap untuk pilih file';
+      document.getElementById('uzFn').textContent='';
+      uz.classList.remove('done');
+      document.getElementById('lockNote').classList.remove('show');
+      await loadSlots();
+    } else {
+      toast(`❌ ${data.message}`,'error');
+      if(data.locked){
+        document.getElementById('lockNote').textContent=`🔒 ${data.message}`;
+        document.getElementById('lockNote').classList.add('show');
+      }
+    }
+  } catch(e){
+    toast('❌ Gagal terhubung ke server','error');
+  } finally {
+    btn.classList.remove('ld'); btn.disabled=false;
+  }
+}
+
+function toB64(file){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>res(r.result.split(',')[1]);
+    r.onerror=rej; r.readAsDataURL(file);
+  });
+}
+
+loadSlots();
+</script>
+</body>
+</html>

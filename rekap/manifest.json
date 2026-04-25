@@ -1,0 +1,22 @@
+{
+  "name": "Upload Laporan PA Bengkayang",
+  "short_name": "Upload Laporan",
+  "description": "Sistem Upload Laporan Kegiatan Security PA Bengkayang",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#060f0a",
+  "theme_color": "#0a1f13",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192x192/0a1f13/2dff7a?text=UL",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512x512/0a1f13/2dff7a?text=UL",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
