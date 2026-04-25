@@ -487,11 +487,21 @@ uz.addEventListener('drop',e=>{
   else toast('⚠️ Hanya file PDF','warn');
 });
 
-// ── GAS fetch GET ──────────────────────────────────────────
+// ── GAS call ───────────────────────────────────────────────
 async function gasCall(params){
-  const qs = new URLSearchParams(params).toString();
-  const res = await fetch(GAS_URL + '?' + qs);
-  return res.json();
+  if(params.action === 'uploadLaporan'){
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain'},
+      body: JSON.stringify(params),
+      redirect: 'follow'
+    });
+    return res.json();
+  } else {
+    const qs = new URLSearchParams(params).toString();
+    const res = await fetch(GAS_URL + '?' + qs);
+    return res.json();
+  }
 }
 
 // ── Check lock ─────────────────────────────────────────────
