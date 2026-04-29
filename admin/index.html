@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=1280, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ADMIN — LAPOR PAK · PA Bengkayang</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -382,6 +382,52 @@ tr:hover td { background: var(--accent-xs); }
 .pdf-item .pdf-info .pdf-meta { font-size: 11px; color: var(--muted); font-family: var(--mono); }
 .pdf-item .pdf-open { margin-left: auto; }
 
+/* ── BOTTOM NAV (base — hidden by default) ── */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 64px;
+  background: #ffffff;
+  border-top: 1.5px solid var(--border);
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+  z-index: 150;
+  padding: 0 4px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  align-items: stretch;
+}
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  border-radius: 10px;
+  margin: 6px 2px;
+  transition: all 0.15s;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 2px;
+  border: none;
+  background: none;
+  font-family: var(--body);
+  -webkit-tap-highlight-color: transparent;
+}
+.bottom-nav-item .bn-icon {
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px;
+  background: transparent;
+  transition: all 0.15s;
+  color: inherit;
+}
+.bottom-nav-item.active { color: var(--accent); }
+.bottom-nav-item.active .bn-icon { background: var(--accent-xl); }
+.bottom-nav-item:active { opacity: 0.7; }
+
 /* ── PAGES ──────────────────────────── */
 .page { display: none; }
 .page.active { display: flex; flex-direction: column; gap: 16px; }
@@ -413,99 +459,74 @@ tr:hover td { background: var(--accent-xs); }
   .topbar-right-logos { gap: 8px; }
   .admin-chip { font-size: 8px; padding: 2px 7px; }
 
-  /* Hide sidebar — replaced by bottom nav */
+  /* Hide sidebar */
   .sidebar { display: none !important; }
 
-  /* Layout adjusts for bottom nav */
+  /* Show bottom nav */
+  .bottom-nav { display: flex !important; }
+
+  /* Layout */
   .layout { flex-direction: column; }
   .main {
     padding: 12px;
-    padding-bottom: 80px; /* space for bottom nav */
+    padding-bottom: 80px;
     gap: 12px;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Bottom navigation bar */
-  .bottom-nav {
-    display: flex !important;
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    height: 64px;
-    background: #ffffff;
-    border-top: 1.5px solid var(--border);
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
-    z-index: 100;
-    padding: 0 4px;
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-  }
-  .bottom-nav-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-    cursor: pointer;
-    border-radius: 10px;
-    margin: 6px 2px;
-    transition: all 0.15s;
-    color: var(--muted);
-    font-size: 10px;
-    font-weight: 600;
-    padding: 4px 2px;
-    border: none;
-    background: none;
-    font-family: var(--body);
-  }
-  .bottom-nav-item .bn-icon {
-    width: 28px; height: 28px;
-    display: flex; align-items: center; justify-content: center;
-    border-radius: 8px;
-    background: transparent;
-    transition: all 0.15s;
-  }
-  .bottom-nav-item.active { color: var(--accent); }
-  .bottom-nav-item.active .bn-icon {
-    background: var(--accent-xl);
-    color: var(--accent);
-  }
-  .bottom-nav-item:hover { color: var(--accent); }
-
   /* Stats */
   .stats-row { grid-template-columns: 1fr 1fr; gap: 8px; }
   .stat-card { padding: 12px 13px; }
   .stat-value { font-size: 22px; }
-  .stat-icon { font-size: 20px; opacity: 0.08; }
+  .stat-icon svg { opacity: 0.08; }
 
   /* Charts */
   .chart-row { grid-template-columns: 1fr; gap: 10px; }
 
-  /* Section head stack on mobile */
+  /* Section head */
   .section-head { flex-direction: column; align-items: flex-start; gap: 8px; }
-  .filters { gap: 5px; }
+  .filters { gap: 5px; flex-wrap: wrap; }
   .filter-input { font-size: 12px; padding: 6px 9px; }
   .config-input { width: 100%; }
 
   /* Tables */
-  .table-inner { -webkit-overflow-scrolling: touch; }
-  table { font-size: 12px; }
-  td, th { padding: 9px 10px; }
+  .table-inner { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { font-size: 12px; min-width: 500px; }
+  td, th { padding: 9px 10px; white-space: nowrap; }
 
   /* Modals */
-  .modal-box { height: 92vh; border-radius: 14px 14px 0 0; max-width: 100%; margin: 0; align-self: flex-end; }
   .modal-overlay { align-items: flex-end; padding: 0; }
-  .modal-box.sm, .modal-box.md { max-width: 100%; height: auto; max-height: 88vh; border-radius: 14px 14px 0 0; align-self: flex-end; }
+  .modal-box { height: 92vh; border-radius: 14px 14px 0 0; max-width: 100%; margin: 0; align-self: flex-end; }
+  .modal-box.sm, .modal-box.md { max-width: 100%; height: auto; max-height: 88vh; border-radius: 14px 14px 0 0; }
 
   /* Del modal */
   .del-box { padding: 20px 18px; }
 
-  /* PDF viewer stacked */
-  #page-pdfview > div[style*="grid-template-columns:320px"] {
+  /* PDF viewer — stack vertically */
+  .pdf-viewer-grid {
     grid-template-columns: 1fr !important;
     height: auto !important;
+    min-height: 0 !important;
   }
+  .pdf-embed-panel { min-height: 400px; }
 }
+
+/* ── MOBILE CLASS (JS-detected) ─────── */
+body.is-mobile .sidebar { display: none !important; }
+body.is-mobile .bottom-nav { display: flex !important; }
+body.is-mobile .layout { flex-direction: column; }
+body.is-mobile .main { padding: 12px; padding-bottom: 80px; gap: 12px; }
+body.is-mobile .stats-row { grid-template-columns: 1fr 1fr; gap: 8px; }
+body.is-mobile .chart-row { grid-template-columns: 1fr; }
+body.is-mobile .section-head { flex-direction: column; align-items: flex-start; gap: 8px; }
+body.is-mobile .pdf-viewer-grid { grid-template-columns: 1fr !important; height: auto !important; }
+body.is-mobile .pdf-embed-panel { min-height: 350px; }
+body.is-mobile table { font-size: 12px; min-width: 500px; }
+body.is-mobile .topbar { padding: 0 12px; height: 52px; }
+body.is-mobile .topbar-time { display: none; }
+body.is-mobile .topbar-logo .lapor-pak-img { height: 36px; }
+body.is-mobile .topbar-pa-logo { height: 34px; }
 </style>
 </head>
 <body>
@@ -680,7 +701,7 @@ tr:hover td { background: var(--accent-xs); }
       </div>
 
       <!-- PDF list + embed area -->
-      <div style="display:grid;grid-template-columns:320px 1fr;gap:14px;flex:1;min-height:0;height:calc(100vh - 180px)">
+      <div class="pdf-viewer-grid" style="display:grid;grid-template-columns:320px 1fr;gap:14px;flex:1;min-height:0;height:calc(100vh - 180px)">
         <!-- List kiri -->
         <div class="table-wrap" style="overflow-y:auto;max-height:100%">
           <div style="padding:10px 14px;border-bottom:1px solid var(--border2);background:var(--bg)">
@@ -1617,6 +1638,15 @@ function hapusCache() {
 
 // ── INIT ─────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded',()=>{
+  // ── MOBILE DETECTION ─────────────────────────────────────
+  function checkMobile() {
+    const isMobile = window.innerWidth <= 768 ||
+      /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+    document.body.classList.toggle('is-mobile', isMobile);
+  }
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
+
   const saved = localStorage.getItem('adminScriptUrl');
   if (saved && saved.trim()) {
     SCRIPT_URL = saved.trim();
