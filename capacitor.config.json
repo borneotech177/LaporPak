@@ -1,0 +1,8 @@
+{
+  "appId": "com.borneotech.laporpak",
+  "appName": "LaporPak",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}
